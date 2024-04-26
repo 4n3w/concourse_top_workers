@@ -45,41 +45,41 @@ Ex.
 ```
 python3 top_workers_and_builds.py
 Top 10 Busiest Workers:
-                                      instance  cpu_total
-3  worker/3b6b14a6-4ddb-4d31-98e4-38bd826460d2       99.7
-5  worker/9f55a1ac-3e74-4b0e-ad9d-cd3dffeffcad       87.7
-2  worker/0533664a-6b3a-4895-a22f-6d495198c449       25.2
-9  worker/fcc90662-0c64-47cd-8234-fe97f7b09be6        0.5
-4  worker/8c219115-71bb-4ab4-b652-eb4aeab511bc        0.3
-6  worker/b929595f-dc02-4a43-85a5-a281c4eac28b        0.3
-8  worker/d4ab4e4b-d97a-4443-8652-6900e950ee7b        0.3
-7  worker/d18ca852-e84a-4815-af9a-de6e22f65104        0.2
+                                   instance  cpu_total
+worker/3b6b14a6-4ddb-4d31-98e4-38bd826460d2       99.7
+worker/9f55a1ac-3e74-4b0e-ad9d-cd3dffeffcad       87.7
+worker/0533664a-6b3a-4895-a22f-6d495198c449       25.2
+worker/fcc90662-0c64-47cd-8234-fe97f7b09be6        0.5
+worker/8c219115-71bb-4ab4-b652-eb4aeab511bc        0.3
+worker/b929595f-dc02-4a43-85a5-a281c4eac28b        0.3
+worker/d4ab4e4b-d97a-4443-8652-6900e950ee7b        0.3
+worker/d18ca852-e84a-4815-af9a-de6e22f65104        0.2
 
 
 Details for Worker: worker/3b6b14a6-4ddb-4d31-98e4-38bd826460d2
 
 Related Started Builds:
 
-       id team_name          job_name pipeline_name   status
-0  134446      main   stress-cpu-load         alpha  started
-2  134361      main   stress-cpu-load       whiskey  started
-3  134360      main  stress-disk-load       whiskey  started
+    id team_name          job_name pipeline_name   status
+134446      main   stress-cpu-load         alpha  started
+134361      main   stress-cpu-load       whiskey  started
+134360      main  stress-disk-load       whiskey  started
 
 
 Details for Worker: worker/9f55a1ac-3e74-4b0e-ad9d-cd3dffeffcad
 
 Related Started Builds:
 
-       id team_name             job_name pipeline_name   status
-1  134362      main  stress-network-load       whiskey  started
+    id team_name             job_name pipeline_name   status
+134362      main  stress-network-load       whiskey  started
 
 
 Details for Worker: worker/0533664a-6b3a-4895-a22f-6d495198c449
 
 Related Started Builds:
 
-       id team_name         job_name pipeline_name   status
-4  134298      main  stress-cpu-load         bravo  started
+    id team_name         job_name pipeline_name   status
+134298      main  stress-cpu-load         bravo  started
 
 
 Details for Worker: worker/fcc90662-0c64-47cd-8234-fe97f7b09be6
