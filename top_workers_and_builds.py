@@ -28,8 +28,19 @@ def get_containers(target):
     if data:
         df = pd.DataFrame(data)
         # Ensure job_id and build_id are integers; handle NaNs by converting to -1 and then to int
-        df['job_id'] = df['job_id'].fillna(-1).astype(int)
-        df['build_id'] = df['build_id'].fillna(-1).astype(int)
+        # Also ensure they're present, we'll just assign a bogus value if they're not found
+        if 'job_id' not in df.columns:
+            df['job_id'] = -1
+        else:
+            df['job_id'] = df['job_id'].fillna(-1).astype(int)
+
+        if 'build_id' not in df.columns:
+            df['build_id'] = -1
+        else:
+            df['build_id'] = df['build_id'].fillna(-1).astype(int)
+
+        df['build_name'] = df['build_name'].fillna("Unknown")
+
         # Filter containers to include only those that are 'task' type and in 'created' state
         filtered_df = df[(df['type'] == 'task') & (df['state'] == 'created')]
         return filtered_df
@@ -40,6 +51,7 @@ def get_builds(target):
     data = fetch_json_data(['fly', '-t', target, 'builds', '--json'])
     if data:
         builds_df = pd.DataFrame(data)
+        builds_df.rename(columns={'id': 'build_id'}, inplace=True)
         return builds_df[builds_df['status'] == 'started']
     return pd.DataFrame()
 
@@ -48,35 +60,46 @@ def main(deployment_name, target):
     containers_df = get_containers(target)
     builds_df = get_builds(target)
 
+    print("Top 10 Busiest Workers:")
+
     if top_workers.empty:
         print("No worker data available.")
         return
-    if containers_df.empty or builds_df.empty:
-        print("No sufficient build or container data available via fly/concourse.")
-        return
 
-    print("Top 10 Busiest Workers:")
     print(top_workers[['instance', 'cpu_total']].to_string(index=False))
+
+    print("\nWorker Details: \n")
+
+    if containers_df.empty or builds_df.empty:
+        print("No sufficient build or container data available via fly/concourse. Not busy?!")
+        return
 
     for _, worker in top_workers.iterrows():
         full_worker_id = worker['instance']
         worker_id_prefix = full_worker_id.split('/')[1][:8]  # Extract the worker ID and take first 8 characters
-
-        print(f"\n\nDetails for Worker: {full_worker_id}\n")
 
         # Using substring matching for worker_name to ensure correct association
         worker_containers = containers_df[containers_df['worker_name'].str.startswith(worker_id_prefix)]
 
         if not worker_containers.empty:
             worker_build_ids = worker_containers['build_id'].unique()
-            worker_builds = builds_df[builds_df['id'].isin(worker_build_ids)]
+            worker_builds = builds_df[builds_df['build_id'].isin(worker_build_ids)]
+
             if not worker_builds.empty:
-                print("Related Started Builds:\n")
-                print(worker_builds[['id', 'team_name', 'job_name', 'pipeline_name', 'status']].to_string(index=False))
+                # Merge and keep both job_name columns separately if necessary
+                merged_builds = worker_builds.merge(worker_containers[['build_id', 'job_name', 'build_name', 'step_name']], on='build_id', how='left', suffixes=('_build', '_container'))
+                try:
+                    merged_builds.rename(columns={'build_name': 'build_number'}, inplace=True)  # Renaming column for clarity
+                    merged_builds.rename(columns={'job_name_build': 'job_name'}, inplace=True)  # Renaming column for clarity
+                    print(f"{full_worker_id} builds:\n")
+                    print(merged_builds[['team_name', 'pipeline_name', 'job_name', 'step_name', 'build_number', 'status']].to_string(index=False))
+                except KeyError as e:
+                    print(f"KeyError after merge for {full_worker_id}: {e}")
+                print("\n")
             else:
-                print("No started builds found for this worker.")
+                print(f"{full_worker_id} No started builds found for this worker.")
         else:
-            print(f"No containers found for worker ID prefix: {worker_id_prefix}")
+            print(f"{full_worker_id} No containers found for worker")
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
